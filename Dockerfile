@@ -1,16 +1,15 @@
 FROM dailyco/pipecat-base:latest
 
-# Enable bytecode compilation
+# Opcional: mejora pequeños temas de rendimiento
 ENV UV_COMPILE_BYTECODE=1
-
-# Copy from the cache instead of linking since it's a mounted volume
 ENV UV_LINK_MODE=copy
 
-# Install the project's dependencies using the lockfile and settings
-RUN --mount=type=cache,target=/root/.cache/uv \
-    --mount=type=bind,source=uv.lock,target=uv.lock \
-    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-    uv sync --locked --no-install-project --no-dev
+# Copiamos el archivo de dependencias
+COPY pyproject.toml pyproject.toml
 
-# Copy the application code
+# Instalamos dependencias (sin usar uv.lock)
+RUN uv sync --no-install-project --no-dev
+
+# Copiamos el código de la app
 COPY ./bot.py bot.py
+
