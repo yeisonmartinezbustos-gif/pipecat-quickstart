@@ -4,14 +4,12 @@ FROM python:3.11-slim-bookworm
 WORKDIR /app
 
 # Paquetes del sistema necesarios para audio / red
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        ffmpeg \
-        libnss3 \
-        libglib2.0-0 \
-        libasound2 \
-        ca-certificates && \
-    rm -rf /var/lib/apt/lists/*
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir \
+        "pipecat-ai[deepgram,openai,cartesia,webrtc]" \
+        onnxruntime \
+        python-dotenv
+
 
 # Copiamos todo el código del proyecto al contenedor
 COPY . .
