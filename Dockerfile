@@ -1,15 +1,29 @@
-FROM dailyco/pipecat-base:latest
+FROM python:3.11-slim-bookworm
 
-# Opcional: mejora pequeños temas de rendimiento
-ENV UV_COMPILE_BYTECODE=1
-ENV UV_LINK_MODE=copy
+# Directorio de trabajo dentro del contenedor
+WORKDIR /app
 
-# Copiamos el archivo de dependencias
-COPY pyproject.toml pyproject.toml
+# Paquetes del sistema necesarios para audio / red
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        ffmpeg \
+        libnss3 \
+        libglib2.0-0 \
+        libasound2 \
+        ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
 
-# Instalamos dependencias (sin usar uv.lock)
-RUN uv sync --no-install-project --no-dev
+# Copiamos todo el código del proyecto al contenedor
+COPY . .
 
-# Copiamos el código de la app
-COPY ./bot.py bot.py
+# Instalamos dependencias de Python (Pipecat + extras que usa el quickstart)
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir \
+        "pipecat-ai[deepgram,openai,cartesia,webrtc]" \
+        python-dotenv
 
+# El bot expone el puerto 7860
+EXPOSE 7860
+
+# Ejecutar el bot
+CMD ["python", "bot.py"]
